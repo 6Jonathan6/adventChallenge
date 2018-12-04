@@ -14,6 +14,9 @@ class Claim {
     get yLimit() {
         return this.y + this.height
     }
+    get area() {
+        return this.width * this.height
+    }
     overlap(claim) {
         console.log(claim)
         if ((claim.x >= this.x && claim.x <= this.xLimit) && (claim.y >= this.y && claim.y <= this.yLimit)) {
