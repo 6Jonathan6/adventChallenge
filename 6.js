@@ -54,10 +54,7 @@ function parser(item) {
     }
     return { regystryDate, action }
 }
-const parsed = data.map(parser)
-const sorted = parsed.sort((a, b) => {
-    return a.regystryDate - b.regystryDate
-})
+
 
 function sleepMinutes(fallasleep, wakeUp) {
     return new Date(wakeUp - fallasleep).getMinutes()
@@ -125,8 +122,39 @@ function composer(array) {
     return result
 }
 
-const parsedExample = example.map(parser)
-console.log(composer(parsed))
-console.log(composer(parsedExample))
+function getFrecuencies(array) {
+    const allMinutes = []
+    const result = new Map()
+    let maxFrecuency
+    const map2 = new Map()
+    const map = setTimes(array)
+    map.forEach((value, key) => {
+        map2.set(key, count(value.minutes))
+    })
+    map2.forEach((value, key) => {
+        Array.from(value.values()).forEach((frecuency) => {
+            allMinutes.push(frecuency)
+        })
+    })
+    maxFrecuency = Math.max(...allMinutes)
+    map2.forEach((value, id) => {
+        value.forEach((frecuency, minute) => {
+            if (frecuency === maxFrecuency) {
+                result.set(id, { minute, frecuency })
+            }
+        })
+    })
+    return result
+}
 
+const parsed = data.map(parser)
+const sorted = parsed.sort((a, b) => {
+    return a.regystryDate - b.regystryDate
+})
+
+const parsedExample = example.map(parser)
+// console.log(getFrecuencies(parsedExample))
+console.log(composer(parsed))
+console.log(getFrecuencies(parsed))
+// console.log(composer(parsedExample))
 // console.log(setTimes(parsed))
