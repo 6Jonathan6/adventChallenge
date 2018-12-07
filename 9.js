@@ -80,7 +80,7 @@ function updateMap(doneStep, map) {
     map.delete(doneStep)
 
 }
-function getAvailableSteps(map) {
+function getAvailableStep(map) {
     const firstSteps = []
     map.forEach((value, key) => {
         if (value.previousSteps.length === 0) {
@@ -100,7 +100,7 @@ function getAvailableSteps(map) {
 
 function runTime(stepsMap, results = [], numberOfSteps) {
     if (numberOfSteps === results.length || stepsMap.size === 0) return results.join('')
-    const newResults = [...results, ...getAvailableSteps(stepsMap)]
+    const newResults = [...results, ...getAvailableStep(stepsMap)]
     return runTime(stepsMap, newResults, numberOfSteps)
 }
 
@@ -116,10 +116,12 @@ function getLastStep(array) {
 // console.log(runTime(stepsMap, [], getNumberOfSteps(stepsMap)) + lastStep)
 
 // Part 2
-function getLetterTime(letter, map, period) {
+function getLetterTime(letter, coords, period) {
+    const map = addPreviousStepsAll(getSteps(coords))
     const letters = getLetters(map)
     return letters.findIndex((le) => le === letter) !== -1 ? letters.findIndex((le) => le === letter) + 1 + period : null
 }
+
 function getLetters(map) {
     const uniques = new Set()
     map.forEach((value, key) => {
@@ -135,9 +137,10 @@ function getLetters(map) {
     })
     return Array.from(uniques).sort()
 }
-function getAvailableSteps2(map, workers) {
+
+
+function getAvailableSteps(map, workers) {
     const firstSteps = []
-    let steps
     map.forEach((value, key) => {
         if (value.previousSteps.length === 0) {
             firstSteps.push(key)
@@ -145,49 +148,34 @@ function getAvailableSteps2(map, workers) {
     })
     if (firstSteps.length !== 0) {
         if (firstSteps.length > workers) {
-            steps = firstSteps.sort().slice(0, workers + 1)
+            const steps = firstSteps.sort().slice(0, workers + 1)
             steps.forEach(step => {
                 updateMap(step, map)
             })
+            return steps
         } else {
-            steps = firstSteps.sort()
+            const steps = firstSteps.sort()
             steps.forEach(step => {
                 updateMap(step, map)
             })
+            return steps
         }
+
     }
-    console.log(steps)
-    return steps.sort()
 }
+const mapExample = addPreviousStepsAll(getSteps(example))
 
-function working(map, time = 0, workers, period, workersMap) {
-    if (map.size === 0) return workersMap
-    const doneSteps = getAvailableSteps2(map, workers)
-    doneSteps.forEach((letter, index) => {
-        workersMap.set(index, [(getLetterTime(letter, map5, period))])
+function parallelWorking(mapOfSteps, numberOfWorkers, originalArray, period, arrayOfWorkers) {
+    if (mapOfSteps.size === 0) return arrayOfWorkers
+    let arrayW = arrayOfWorkers.length === 0 ? [] : arrayOfWorkers
+    const doneSteps = getAvailableSteps(mapOfSteps, numberOfWorkers)
+    let timesAndSteps = []
+    doneSteps.forEach((step) => {
+        const time = getLetterTime(step, originalArray, period)
+        timesAndSteps.push({ step, time })
     })
-    // const newTime = time     + Math.max(...times)
-    return working(map, time, workers, period, workersMap)
+    arrayW = [...arrayW, timesAndSteps]
+    return parallelWorking(mapOfSteps, numberOfWorkers, originalArray, period, arrayW)
+
 }
-const usuarios = new Map()
-// const map2 = addPreviousStepsAll(getSteps(data))
-// const lastLetter = getLastStep(data)
-// const map3 = addPreviousStepsAll(getSteps(data))
-// const workers = working(map2, 0, 5, 60, usuarios)
-// const sums = workers.map(worker => {
-//     if (worker.length !== 0) {
-//         return worker.reduce((total, num) => {
-//             return total + num
-//         })
-
-//     }
-// })
-// console.log(sums)
-// console.log(getLetterTime(lastLetter, map3, 60))
-
-const map4 = addPreviousStepsAll(getSteps(example))
-const lastLetter2 = getLastStep(example)
-const map5 = addPreviousStepsAll(getSteps(example))
-const workers2 = working(map4, 0, 2, 0, usuarios)
-console.log(workers2)
-console.log(getLetterTime(lastLetter2, map5, 0))
+console.log(parallelWorking(mapExample, 2, example, 0, []))
